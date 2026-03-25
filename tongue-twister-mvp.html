@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TwistUp — Tongue Twister Challenge</title>
+<style>
+  :root {
+    --bg: #0f0f13;
+    --bg2: #17171e;
+    --bg3: #1f1f28;
+    --bg4: #27272f;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0eff5;
+    --text2: #a09eb5;
+    --text3: #6b697e;
+    --purple: #7c5cbf;
+    --purple-l: #9b7fe0;
+    --purple-bg: rgba(124,92,191,0.15);
+    --teal: #2dd4a0;
+    --teal-bg: rgba(45,212,160,0.12);
+    --coral: #f4715a;
+    --coral-bg: rgba(244,113,90,0.12);
+    --amber: #f5a623;
+    --amber-bg: rgba(245,166,35,0.12);
+    --green: #4ade80;
+    --green-bg: rgba(74,222,128,0.12);
+    --red: #f87171;
+    --radius: 12px;
+    --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: auto; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .app { max-width: 480px; margin: 0 auto; padding: 0 0 80px; position: relative; }
+  .screen { display: none; flex-direction: column; min-height: 100vh; animation: fadeIn 0.22s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ── NAV ── */
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; position: sticky; top: 0; z-index: 10;
+    background: rgba(15,15,19,0.94); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .logo span { color: var(--purple-l); }
+  .streak-badge {
+    display: flex; align-items: center; gap: 4px;
+    background: var(--amber-bg); color: var(--amber);
+    padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(245,166,35,0.25);
+  }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 14px; color: var(--text2); cursor: pointer;
+    background: none; border: none; padding: 0; color: var(--text2);
+  }
+  .back-btn:hover { color: var(--text); }
+
+  /* ── CARDS / TAGS / BUTTONS ── */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .card-sm { padding: 14px 16px; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .tag-purple { background: var(--purple-bg); color: var(--purple-l); border: 1px solid rgba(155,127,224,0.2); }
+  .tag-teal { background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(45,212,160,0.2); }
+  .tag-coral { background: var(--coral-bg); color: var(--coral); border: 1px solid rgba(244,113,90,0.2); }
+  .tag-amber { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+  .tag-green { background: var(--green-bg); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 24px; border-radius: var(--radius); border: none;
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+    white-space: nowrap; font-family: inherit;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--purple); color: #fff; }
+  .btn-primary:hover { background: var(--purple-l); }
+  .btn-ghost { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg4); color: var(--text); }
+  .btn-teal { background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(45,212,160,0.25); }
+  .btn-teal:hover { background: rgba(45,212,160,0.2); }
+  .btn-full { width: 100%; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 8px; }
+
+  /* ── HOME ── */
+  .hero { padding: 28px 20px 20px; text-align: center; }
+  .hero h1 { font-size: 30px; font-weight: 800; letter-spacing: -1px; line-height: 1.2; }
+  .hero h1 em { color: var(--purple-l); font-style: normal; }
+  .hero p { color: var(--text2); margin-top: 8px; font-size: 15px; line-height: 1.5; }
+  .section-label { padding: 0 20px; margin-bottom: 12px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+  .filter-tabs { display: flex; gap: 8px; padding: 0 16px 14px; overflow-x: auto; }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .filter-tab { padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); transition: all 0.15s; }
+  .filter-tab:hover { color: var(--text); }
+  .filter-tab.active { background: var(--purple-bg); color: var(--purple-l); border-color: rgba(155,127,224,0.3); }
+  .twister-grid { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; }
+  .twister-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; cursor: pointer; transition: all 0.15s; position: relative; overflow: hidden; }
+  .twister-card:hover { border-color: var(--border2); background: var(--bg3); transform: translateY(-1px); }
+  .twister-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .twister-title { font-size: 15px; font-weight: 600; line-height: 1.3; flex: 1; }
+  .twister-preview { font-size: 13px; color: var(--text2); margin-top: 6px; line-height: 1.5; font-style: italic; }
+  .twister-meta { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .diff-badge { position: absolute; right: 0; top: 0; bottom: 0; width: 4px; border-radius: 0 var(--radius-lg) var(--radius-lg) 0; }
+  .diff-easy { background: var(--green); }
+  .diff-medium { background: var(--amber); }
+  .diff-hard { background: var(--coral); }
+  .stat-row { display: flex; gap: 10px; }
+  .stat-card { flex: 1; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
+  .stat-val { font-size: 24px; font-weight: 800; }
+  .stat-lbl { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  /* ── RECORDING SCREEN ── */
+  .twister-display { margin: 16px 20px; padding: 20px 24px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); text-align: center; }
+  .twister-display .twister-text { font-size: 19px; font-weight: 700; line-height: 1.55; color: var(--text); }
+  .twister-display .t-author { font-size: 12px; color: var(--text3); margin-top: 8px; }
+
+  /* Video preview */
+  .video-container {
+    margin: 0 20px 16px; position: relative; background: #000;
+    border-radius: var(--radius-lg); overflow: hidden;
+    border: 1px solid var(--border); aspect-ratio: 16/9;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .video-container video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .video-placeholder {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--text3); font-size: 13px;
+  }
+  .video-placeholder svg { opacity: 0.4; }
+  .vid-mode-toggle {
+    position: absolute; top: 10px; right: 10px; z-index: 5;
+    display: flex; gap: 6px;
+  }
+  .vid-mode-btn {
+    padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.6); color: rgba(255,255,255,0.8);
+    backdrop-filter: blur(6px); transition: all 0.15s;
+  }
+  .vid-mode-btn.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .rec-live-dot {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(0,0,0,0.6); border-radius: 20px;
+    padding: 4px 10px; font-size: 12px; font-weight: 700; color: var(--coral);
+    display: none; align-items: center; gap: 5px; backdrop-filter: blur(6px);
+  }
+  .rec-live-dot.show { display: flex; }
+  .live-blink { width: 7px; height: 7px; border-radius: 50%; background: var(--coral); animation: blink 1s ease infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .waveform-container { height: 56px; background: var(--bg3); border-radius: var(--radius); margin: 0 20px 16px; display: flex; align-items: center; overflow: hidden; border: 1px solid var(--border); }
+  .waveform-bars { display: flex; align-items: center; gap: 2px; height: 100%; padding: 0 12px; width: 100%; }
+  .waveform-bar { flex: 1; max-width: 4px; background: var(--border2); border-radius: 2px; transition: height 0.06s; }
+  .waveform-bar.active { background: var(--purple-l); }
+
+  .rec-btn-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 0 20px; }
+  .rec-btn { width: 76px; height: 76px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .rec-btn-idle { background: var(--coral); box-shadow: 0 0 0 6px var(--coral-bg); }
+  .rec-btn-idle:hover { transform: scale(1.06); box-shadow: 0 0 0 12px var(--coral-bg); }
+  .rec-btn-recording { background: var(--coral); animation: pulse 1.2s ease infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 6px rgba(244,113,90,0.3)} 50%{box-shadow:0 0 0 20px rgba(244,113,90,0.08)} }
+  .rec-status { font-size: 14px; color: var(--text2); text-align: center; }
+
+  /* Countdown overlay — full screen takeover */
+  .countdown-overlay {
+    position: fixed; inset: 0; background: rgba(15,15,19,0.95);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    z-index: 200;
+  }
+  .countdown-number {
+    font-size: 120px; font-weight: 900; color: var(--text); line-height: 1;
+    animation: countPop 0.9s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+  .countdown-number.go { color: var(--teal); font-size: 80px; }
+  @keyframes countPop { 0%{opacity:0;transform:scale(0.5)} 60%{opacity:1;transform:scale(1.08)} 100%{opacity:1;transform:scale(1)} }
+  .countdown-label { font-size: 16px; color: var(--text2); font-weight: 600; }
+  .countdown-twister { font-size: 14px; color: var(--text3); max-width: 280px; text-align: center; line-height: 1.5; font-style: italic; }
+
+  .rec-after { padding: 16px 20px 0; display: none; flex-direction: column; gap: 10px; }
+  .rec-after.show { display: flex; }
+  .privacy-note { font-size: 12px; color: var(--text3); text-align: center; line-height: 1.5; }
+  .privacy-note a { color: var(--text2); text-decoration: underline; }
+  .actions-row { display: flex; gap: 10px; }
+  .actions-row .btn { flex: 1; }
+
+  /* ── RESULTS ── */
+  .results-content { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .score-hero { text-align: center; padding: 28px 20px; background: var(--bg2); border-radius: var(--radius-lg); border: 1px solid var(--border); position: relative; overflow: hidden; }
+  .score-number { font-size: 68px; font-weight: 900; letter-spacing: -3px; line-height: 1; background: linear-gradient(135deg, var(--purple-l), var(--teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .score-label { font-size: 14px; color: var(--text2); margin-top: 4px; }
+  .score-grade { font-size: 28px; margin-top: 8px; }
+  .confetti-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .confetti-piece { position: absolute; border-radius: 2px; animation: confettiFall linear forwards; }
+  @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(500px) rotate(720deg);opacity:0} }
+
+  /* Results video/audio playback */
+  .media-playback-card { background: var(--bg2); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
+  .media-video-preview { width: 100%; aspect-ratio: 16/9; background: #000; display: block; }
+  .media-video-preview.hidden { display: none; }
+  .media-controls { padding: 14px 16px; }
+  .media-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .play-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--purple); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+  .play-btn:hover { background: var(--purple-l); transform: scale(1.05); }
+  .media-info { flex: 1; }
+  .media-title { font-size: 13px; font-weight: 600; }
+  .media-time { font-size: 12px; color: var(--text2); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .media-dl-row { display: flex; gap: 8px; }
+  .progress-bar-wrap { height: 4px; background: var(--bg4); border-radius: 2px; cursor: pointer; margin-bottom: 12px; }
+  .progress-bar-fill { height: 100%; background: var(--purple-l); border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+  /* Diff */
+  .diff-display { background: var(--bg2); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 18px; }
+  .diff-display h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 12px; }
+  .diff-line { font-size: 16px; font-weight: 600; line-height: 2.1; display: flex; flex-wrap: wrap; gap: 4px; }
+  .word-correct { color: var(--green); }
+  .word-wrong { color: var(--red); text-decoration: line-through; }
+  .word-missing { color: var(--amber); font-style: italic; }
+  .diff-legend { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* Share panel */
+  .share-panel { background: var(--bg2); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 18px; }
+  .share-panel h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 14px; }
+  .share-preview-card {
+    border-radius: 14px; background: linear-gradient(135deg, #1a1030, #0d1a24);
+    padding: 24px; text-align: center; margin-bottom: 14px; border: 1px solid var(--border2);
+  }
+  .sp-twister { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.88); margin-bottom: 12px; line-height: 1.4; }
+  .sp-score { font-size: 52px; font-weight: 900; background: linear-gradient(135deg, #9b7fe0, #2dd4a0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+  .sp-label { font-size: 13px; color: rgba(255,255,255,0.45); margin-top: 6px; }
+  .sp-brand { font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .share-btns { display: flex; flex-direction: column; gap: 8px; }
+  .share-btn { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border); background: var(--bg3); transition: all 0.15s; font-size: 14px; font-weight: 600; color: var(--text); }
+  .share-btn:hover { border-color: var(--border2); background: var(--bg4); }
+  .share-btn-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .share-btn-text { flex: 1; }
+  .share-btn-sub { font-size: 12px; color: var(--text2); font-weight: 400; margin-top: 1px; }
+
+  /* Leaderboard */
+  .lb-header { padding: 20px; }
+  .lb-header h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .lb-header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+  .lb-list { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+  .lb-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg2); border-radius: var(--radius); border: 1px solid var(--border); }
+  .lb-rank { font-size: 16px; font-weight: 800; width: 28px; text-align: center; color: var(--text3); }
+  .lb-rank.gold { color: #fbbf24; }
+  .lb-rank.silver { color: #94a3b8; }
+  .lb-rank.bronze { color: #cd7c3a; }
+  .lb-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .lb-name { flex: 1; font-size: 14px; font-weight: 600; }
+  .lb-score { font-size: 15px; font-weight: 700; color: var(--purple-l); }
+  .lb-attempts { font-size: 12px; color: var(--text3); }
+  .you-row { border-color: rgba(124,92,191,0.35); background: var(--purple-bg); }
+
+  /* Bottom nav */
+  .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: rgba(15,15,19,0.96); backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0 16px; z-index: 50; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 20px; cursor: pointer; border: none; background: none; color: var(--text3); font-size: 11px; font-weight: 600; transition: color 0.15s; font-family: inherit; }
+  .nav-item.active { color: var(--purple-l); }
+  .nav-item svg { width: 22px; height: 22px; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(40px); background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 11px 18px; font-size: 14px; font-weight: 600; color: var(--text); transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.28s; z-index: 500; white-space: nowrap; opacity: 0; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  select { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 8px 12px; font-size: 14px; font-family: inherit; outline: none; cursor: pointer; }
+  select:hover { border-color: var(--border2); }
+  input[type="range"] { -webkit-appearance: none; height: 4px; border-radius: 2px; background: var(--bg4); width: 100%; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--purple-l); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══ HOME ══ -->
+<div class="screen active" id="screen-home">
+  <nav class="nav">
+    <div class="logo">Twist<span>Up</span></div>
+    <div class="streak-badge">🔥 <span id="streak-count">3</span></div>
+  </nav>
+  <div class="hero">
+    <h1>Can you nail the<br><em>tongue twister?</em></h1>
+    <p>Record yourself, get scored, share your runs.</p>
+  </div>
+  <div class="stat-row" style="padding:0 16px;margin-bottom:18px">
+    <div class="stat-card"><div class="stat-val" style="color:var(--purple-l)" id="home-attempts">7</div><div class="stat-lbl">Attempts today</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--teal)" id="home-best">84%</div><div class="stat-lbl">Best score</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--amber)">3🔥</div><div class="stat-lbl">Day streak</div></div>
+  </div>
+  <div class="section-label">Choose your challenge</div>
+  <div class="filter-tabs">
+    <div class="filter-tab active" data-filter="all">All</div>
+    <div class="filter-tab" data-filter="en">🇬🇧 English</div>
+    <div class="filter-tab" data-filter="es">🇪🇸 Spanish</div>
+    <div class="filter-tab" data-filter="fr">🇫🇷 French</div>
+    <div class="filter-tab" data-filter="de">🇩🇪 German</div>
+    <div class="filter-tab" data-filter="easy">Easy</div>
+    <div class="filter-tab" data-filter="hard">Hard</div>
+  </div>
+  <div class="twister-grid" id="twister-grid"></div>
+  <div style="height:16px"></div>
+</div>
+
+<!-- ══ RECORD ══ -->
+<div class="screen" id="screen-record">
+  <nav class="nav">
+    <button class="back-btn" onclick="goHome()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <div id="rec-difficulty-tag"></div>
+  </nav>
+
+  <div class="twister-display">
+    <div class="twister-text" id="rec-twister-text"></div>
+    <div class="t-author" id="rec-twister-author"></div>
+  </div>
+
+  <!-- Video preview area -->
+  <div class="video-container" id="video-container">
+    <div class="video-placeholder" id="video-placeholder">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="15" height="12" rx="2"/><path d="M17 9l5-3v12l-5-3V9z"/></svg>
+      <span>Camera preview will appear here</span>
+    </div>
+    <video id="live-preview" autoplay muted playsinline style="display:none"></video>
+    <div class="vid-mode-toggle">
+      <div class="vid-mode-btn active" id="mode-video" onclick="setMode('video')">📹 Video</div>
+      <div class="vid-mode-btn" id="mode-audio" onclick="setMode('audio')">🎤 Audio only</div>
+    </div>
+    <div class="rec-live-dot" id="rec-live-dot">
+      <div class="live-blink"></div> REC
+    </div>
+  </div>
+
+  <!-- Waveform -->
+  <div class="waveform-container">
+    <div class="waveform-bars" id="waveform-bars"></div>
+  </div>
+
+  <div class="rec-btn-wrap">
+    <button class="rec-btn rec-btn-idle" id="rec-btn" onclick="toggleRecord()">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="white" id="rec-icon"><circle cx="12" cy="12" r="8"/></svg>
+    </button>
+    <div class="rec-status" id="rec-status">Tap to start · 3-second countdown</div>
+  </div>
+
+  <div class="rec-after" id="rec-after">
+    <div class="actions-row">
+      <button class="btn btn-ghost" onclick="resetRecording()">↺ Try again</button>
+      <button class="btn btn-primary" onclick="analyseRecording()">Analyse →</button>
+    </div>
+    <div class="privacy-note">🔒 Recordings are processed in-browser and not uploaded to our servers. <a href="#">Learn more</a></div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- ══ ANALYSING ══ -->
+<div class="screen" id="screen-analysing">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;gap:20px">
+    <div style="width:60px;height:60px;border:4px solid var(--bg3);border-top-color:var(--purple-l);border-radius:50%;animation:spin 0.9s linear infinite"></div>
+    <div style="font-size:18px;font-weight:700">Analysing your attempt…</div>
+    <div style="font-size:14px;color:var(--text2)" id="analysis-status">Transcribing audio</div>
+  </div>
+</div>
+
+<!-- ══ RESULTS ══ -->
+<div class="screen" id="screen-results">
+  <nav class="nav">
+    <button class="back-btn" onclick="goHome()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Home
+    </button>
+    <div class="tag tag-purple" id="res-twister-name"></div>
+  </nav>
+
+  <div class="results-content">
+    <!-- Score -->
+    <div class="score-hero">
+      <div class="confetti-container" id="confetti"></div>
+      <div class="score-number" id="res-score">--</div>
+      <div class="score-label">accuracy score</div>
+      <div class="score-grade" id="res-grade"></div>
+      <div style="margin-top:10px;display:flex;justify-content:center;gap:10px" id="res-badges"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val" style="font-size:18px" id="res-words-correct">--/--</div><div class="stat-lbl">Words correct</div></div>
+      <div class="stat-card"><div class="stat-val" style="font-size:18px" id="res-wpm">--</div><div class="stat-lbl">Est. WPM</div></div>
+      <div class="stat-card"><div class="stat-val" style="font-size:18px" id="res-pb">—</div><div class="stat-lbl">Personal best</div></div>
+    </div>
+
+    <!-- Word diff -->
+    <div class="diff-display">
+      <h3>Word by word</h3>
+      <div class="diff-line" id="diff-line"></div>
+      <div class="diff-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Correct</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Wrong</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Missed</div>
+      </div>
+    </div>
+
+    <!-- You said -->
+    <div class="card card-sm">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:8px">You said</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.6;font-style:italic" id="res-transcript">"..."</div>
+    </div>
+
+    <!-- Media playback + download -->
+    <div class="media-playback-card">
+      <video class="media-video-preview hidden" id="result-video" playsinline controls></video>
+      <div class="media-controls">
+        <div class="media-top-row">
+          <button class="play-btn" id="play-btn" onclick="togglePlayback()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white" id="play-icon"><polygon points="5 3 19 12 5 21"/></svg>
+          </button>
+          <div class="media-info">
+            <div class="media-title" id="media-title">Your recording</div>
+            <div class="media-time" id="media-time">0:00 / 0:00</div>
+          </div>
+        </div>
+        <div class="progress-bar-wrap" onclick="seekAudio(event)">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="media-dl-row">
+          <button class="btn btn-ghost btn-sm btn-full" id="dl-audio-btn" onclick="downloadAudio()">⬇ Download audio</button>
+          <button class="btn btn-teal btn-sm btn-full" id="dl-video-btn" onclick="downloadVideo()" style="display:none">⬇ Download video</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Share -->
+    <div class="share-panel">
+      <h3>Share your result</h3>
+      <div class="share-preview-card">
+        <div class="sp-twister" id="sp-twister-text"></div>
+        <div class="sp-score" id="sp-score-text">--</div>
+        <div class="sp-label">accuracy · TwistUp</div>
+        <div class="sp-brand">twistup.app</div>
+      </div>
+      <div class="share-btns">
+        <div class="share-btn" onclick="shareToTwitter()">
+          <div class="share-btn-icon" style="background:#000">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </div>
+          <div class="share-btn-text">
+            <div>Share on X / Twitter</div>
+            <div class="share-btn-sub">Post your score to your timeline</div>
+          </div>
+        </div>
+        <div class="share-btn" onclick="shareNative()">
+          <div class="share-btn-icon" style="background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="white" stroke="none"/></svg>
+          </div>
+          <div class="share-btn-text">
+            <div>Share to Instagram / Stories</div>
+            <div class="share-btn-sub">Use native share sheet or screenshot card</div>
+          </div>
+        </div>
+        <div class="share-btn" onclick="shareToTikTok()">
+          <div class="share-btn-icon" style="background:#000">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.87a8.25 8.25 0 004.84 1.55V7a4.85 4.85 0 01-1.07-.31z"/></svg>
+          </div>
+          <div class="share-btn-text">
+            <div>Share to TikTok</div>
+            <div class="share-btn-sub">Download your clip and post it</div>
+          </div>
+        </div>
+        <div class="share-btn" onclick="copyShareLink()">
+          <div class="share-btn-icon" style="background:var(--bg4)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+          </div>
+          <div class="share-btn-text">
+            <div>Copy share link</div>
+            <div class="share-btn-sub" id="share-link-text">twistup.app/r/…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-ghost" onclick="retryCurrentTwister()">↺ Retry</button>
+      <button class="btn btn-primary" onclick="goHome()">More twisters →</button>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- ══ LEADERBOARD ══ -->
+<div class="screen" id="screen-leaderboard">
+  <nav class="nav">
+    <div class="logo">Twist<span>Up</span></div>
+    <select id="lb-twister-select" onchange="renderLeaderboard()"></select>
+  </nav>
+  <div class="lb-header"><h2>Leaderboard 🏆</h2><p>Top scores this week</p></div>
+  <div class="lb-list" id="lb-list"></div>
+  <div style="height:16px"></div>
+</div>
+
+<!-- ══ PROFILE ══ -->
+<div class="screen" id="screen-profile">
+  <nav class="nav"><div class="logo">Twist<span>Up</span></div></nav>
+  <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+    <div class="card" style="text-align:center">
+      <div style="width:68px;height:68px;border-radius:50%;background:var(--purple-bg);border:2px solid rgba(155,127,224,0.4);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px">🎤</div>
+      <div style="font-size:20px;font-weight:700">Guest User</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px">Free tier · Joined today</div>
+      <div style="margin-top:14px">
+        <button class="btn btn-primary btn-full" onclick="showToast('💜 Sign up coming soon!')">Create account →</button>
+        <div style="font-size:12px;color:var(--text3);margin-top:8px">Save history &amp; unlock full leaderboards</div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-val" style="color:var(--purple-l)" id="profile-total">7</div><div class="stat-lbl">Total attempts</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--teal)" id="profile-best">84%</div><div class="stat-lbl">Best ever</div></div>
+      <div class="stat-card"><div class="stat-val" style="color:var(--amber)">3🔥</div><div class="stat-lbl">Streak</div></div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px">Badges earned</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px" id="profile-badges"></div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:12px">Recent history</div>
+      <div id="profile-history" style="font-size:13px;color:var(--text2)">No attempts yet.</div>
+    </div>
+    <div class="privacy-note">🔒 On the free tier, recordings are processed locally and never stored server-side. Scores are kept locally only. <a href="#">Privacy policy →</a></div>
+  </div>
+</div>
+
+</div><!-- end .app -->
+
+<div class="bottom-nav">
+  <button class="nav-item active" id="nav-home" onclick="switchNav('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="nav-item" id="nav-leaderboard" onclick="switchNav('leaderboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Scores
+  </button>
+  <button class="nav-item" id="nav-profile" onclick="switchNav('profile')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profile
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ DATA ══
+const TWISTERS = [
+  { id:1, lang:'en', flag:'🇬🇧', title:'She sells seashells', text:'She sells seashells by the seashore. The shells she sells are surely seashells.', difficulty:'medium', category:'Classic' },
+  { id:2, lang:'en', flag:'🇬🇧', title:'Peter Piper', text:'Peter Piper picked a peck of pickled peppers. A peck of pickled peppers Peter Piper picked.', difficulty:'hard', category:'Classic' },
+  { id:3, lang:'en', flag:'🇬🇧', title:'How much wood', text:'How much wood would a woodchuck chuck if a woodchuck could chuck wood?', difficulty:'easy', category:'Classic' },
+  { id:4, lang:'en', flag:'🇬🇧', title:'Betty Botter', text:'Betty Botter bought some butter but the butter was bitter. If she put it in her batter it would make her batter bitter.', difficulty:'hard', category:'Classic' },
+  { id:5, lang:'en', flag:'🇬🇧', title:'Red lorry', text:'Red lorry, yellow lorry, red lorry, yellow lorry.', difficulty:'easy', category:'Quick' },
+  { id:6, lang:'es', flag:'🇪🇸', title:'Tres tristes tigres', text:'Tres tristes tigres tragan trigo en un trigal.', difficulty:'medium', category:'Spanish' },
+  { id:7, lang:'es', flag:'🇪🇸', title:'Pablito clavó', text:'Pablito clavó un clavito. ¿Qué clavito clavó Pablito?', difficulty:'easy', category:'Spanish' },
+  { id:8, lang:'fr', flag:'🇫🇷', title:'Les chaussettes', text:'Les chaussettes de l\'archi-duchesse sont-elles sèches ou archisèches?', difficulty:'hard', category:'French' },
+  { id:9, lang:'de', flag:'🇩🇪', title:'Fischers Fritz', text:'Fischers Fritz fischt frische Fische, frische Fische fischt Fischers Fritz.', difficulty:'medium', category:'German' },
+];
+
+const LEADERBOARD_DATA = {
+  1:[{name:'SarahK',score:98,attempts:3,color:'#9b7fe0'},{name:'TongueMaster',score:95,attempts:7,color:'#2dd4a0'},{name:'LinguaLord',score:91,attempts:2,color:'#f5a623'},{name:'QuickSpeaker',score:88,attempts:5,color:'#f4715a'},{name:'You',score:84,attempts:4,color:'#7c5cbf',isYou:true},{name:'WordWizard',score:79,attempts:6,color:'#4ade80'}],
+  2:[{name:'PeterFan99',score:92,attempts:9,color:'#2dd4a0'},{name:'TongueMaster',score:89,attempts:4,color:'#9b7fe0'},{name:'You',score:73,attempts:2,color:'#7c5cbf',isYou:true},{name:'QuickSpeaker',score:68,attempts:3,color:'#f4715a'}],
+};
+
+// ══ STATE ══
+const S = {
+  twister: null,
+  filter: 'all',
+  mode: 'video',           // 'video' | 'audio'
+  mediaRecorder: null,
+  chunks: [],
+  audioBlob: null,
+  videoBlob: null,
+  audioURL: null,
+  videoURL: null,
+  audioEl: null,
+  isRecording: false,
+  recSecs: 0,
+  recInterval: null,
+  animFrame: null,
+  analyser: null,
+  audioCtx: null,
+  stream: null,
+  result: null,
+  attempts: +localStorage.getItem('tw_attempts')||7,
+  bestScore: +localStorage.getItem('tw_best')||84,
+  streak: +localStorage.getItem('tw_streak')||3,
+  history: JSON.parse(localStorage.getItem('tw_history')||'[]'),
+  wbars: [],
+  shareId: '',
+};
+
+// ══ INIT ══
+function init() {
+  renderTwisterGrid();
+  renderLeaderboard();
+  renderProfileBadges();
+  renderProfileHistory();
+  initBars();
+  document.getElementById('streak-count').textContent = S.streak;
+  document.getElementById('home-attempts').textContent = S.attempts;
+  document.getElementById('home-best').textContent = S.bestScore + '%';
+  document.querySelectorAll('.filter-tab').forEach(tab => tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    S.filter = tab.dataset.filter;
+    renderTwisterGrid();
+  }));
+}
+
+// ══ TWISTER GRID ══
+function renderTwisterGrid() {
+  const filtered = TWISTERS.filter(t => {
+    if (S.filter === 'all') return true;
+    if (['easy','medium','hard'].includes(S.filter)) return t.difficulty === S.filter;
+    return t.lang === S.filter;
+  });
+  document.getElementById('twister-grid').innerHTML = filtered.map(t => {
+    const tagColor = t.difficulty==='easy'?'teal':t.difficulty==='hard'?'coral':'amber';
+    const pb = getPB(t.id);
+    return `<div class="twister-card" onclick="selectTwister(${t.id})">
+      <div class="diff-badge diff-${t.difficulty}"></div>
+      <div class="twister-card-top">
+        <div class="twister-title">${t.flag} ${t.title}</div>
+        <div class="tag tag-${tagColor}">${t.difficulty.charAt(0).toUpperCase()+t.difficulty.slice(1)}</div>
+      </div>
+      <div class="twister-preview">${t.text.substring(0,60)}${t.text.length>60?'…':''}</div>
+      <div class="twister-meta">
+        <div class="tag tag-purple">${t.category}</div>
+        ${pb ? `<div style="font-size:12px;color:var(--text3)">🏅 Best: ${pb}%</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getPB(id) {
+  const attempts = S.history.filter(h => h.twisterId === id);
+  return attempts.length ? Math.max(...attempts.map(a => a.score)) : null;
+}
+
+// ══ NAV ══
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  // Always scroll to top when switching screens
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function switchNav(name) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+name);
+  if (navEl) navEl.classList.add('active');
+  showScreen(name);
+}
+
+function goHome() {
+  stopRecording(true);
+  cleanupStream();
+  switchNav('home');
+}
+
+// ══ MODE TOGGLE ══
+function setMode(m) {
+  S.mode = m;
+  document.getElementById('mode-video').classList.toggle('active', m==='video');
+  document.getElementById('mode-audio').classList.toggle('active', m==='audio');
+  const ph = document.getElementById('video-placeholder');
+  const lv = document.getElementById('live-preview');
+  if (m === 'audio') {
+    ph.style.display = 'flex';
+    ph.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><path d="M12 1a3 3 0 013 3v8a3 3 0 01-6 0V4a3 3 0 013-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg><span>Audio only mode</span>';
+    lv.style.display = 'none';
+    cleanupStream();
+  } else {
+    ph.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="15" height="12" rx="2"/><path d="M17 9l5-3v12l-5-3V9z"/></svg><span>Camera preview will appear here</span>';
+    startCameraPreview();
+  }
+}
+
+async function startCameraPreview() {
+  cleanupStream();
+  try {
+    S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'user' }, audio: false });
+    const lv = document.getElementById('live-preview');
+    lv.srcObject = S.stream;
+    lv.style.display = 'block';
+    document.getElementById('video-placeholder').style.display = 'none';
+  } catch(e) {
+    document.getElementById('video-placeholder').style.display = 'flex';
+  }
+}
+
+function cleanupStream() {
+  if (S.stream) { S.stream.getTracks().forEach(t => t.stop()); S.stream = null; }
+}
+
+// ══ SELECT TWISTER ══
+function selectTwister(id) {
+  S.twister = TWISTERS.find(t => t.id === id);
+  document.getElementById('rec-twister-text').textContent = S.twister.text;
+  document.getElementById('rec-twister-author').textContent = `${S.twister.flag} ${S.twister.category} · ${S.twister.difficulty.charAt(0).toUpperCase()+S.twister.difficulty.slice(1)}`;
+  const tagColor = S.twister.difficulty==='easy'?'teal':S.twister.difficulty==='hard'?'coral':'amber';
+  document.getElementById('rec-difficulty-tag').innerHTML = `<div class="tag tag-${tagColor}">${S.twister.difficulty.charAt(0).toUpperCase()+S.twister.difficulty.slice(1)}</div>`;
+  resetRecording();
+  showScreen('record');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  // Auto-start camera preview in video mode
+  if (S.mode === 'video') startCameraPreview();
+}
+
+// ══ BARS ══
+function initBars() {
+  const c = document.getElementById('waveform-bars');
+  c.innerHTML = '';
+  S.wbars = [];
+  for (let i = 0; i < 48; i++) {
+    const b = document.createElement('div');
+    b.className = 'waveform-bar';
+    b.style.height = '4px';
+    c.appendChild(b);
+    S.wbars.push(b);
+  }
+}
+
+// ══ RECORDING ══
+async function toggleRecord() {
+  if (S.isRecording) { stopRecording(false); return; }
+  await startCountdown();
+  await beginRecording();
+}
+
+function startCountdown() {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'countdown-overlay';
+    overlay.innerHTML = `
+      <div class="countdown-number" id="cnt-num">3</div>
+      <div class="countdown-label">Get ready…</div>
+      <div class="countdown-twister">"${S.twister.text.substring(0,60)}${S.twister.text.length>60?'…':''}"</div>
+    `;
+    document.body.appendChild(overlay);
+
+    const numEl = overlay.querySelector('#cnt-num');
+    const lblEl = overlay.querySelector('.countdown-label');
+    let count = 3;
+
+    // Each count lasts a full second
+    const tick = () => {
+      count--;
+      if (count === 0) {
+        numEl.className = 'countdown-number go';
+        numEl.textContent = 'Go!';
+        lblEl.textContent = 'Speak now!';
+        setTimeout(() => { overlay.remove(); resolve(); }, 800);
+      } else {
+        numEl.style.animation = 'none';
+        void numEl.offsetHeight; // reflow to restart animation
+        numEl.style.animation = '';
+        numEl.textContent = count;
+        setTimeout(tick, 1000);
+      }
+    };
+    setTimeout(tick, 1000); // first tick after 1s
+  });
+}
+
+async function beginRecording() {
+  try {
+    // Get fresh stream with audio (and video if in video mode)
+    cleanupStream();
+    const constraints = S.mode === 'video'
+      ? { video: { facingMode:'user', width:1280, height:720 }, audio: true }
+      : { audio: true };
+    S.stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    // Update live preview
+    if (S.mode === 'video') {
+      const lv = document.getElementById('live-preview');
+      lv.srcObject = S.stream;
+      lv.style.display = 'block';
+      document.getElementById('video-placeholder').style.display = 'none';
+    }
+
+    // Audio context for waveform
+    S.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = S.audioCtx.createMediaStreamSource(S.stream);
+    S.analyser = S.audioCtx.createAnalyser();
+    S.analyser.fftSize = 128;
+    src.connect(S.analyser);
+
+    // Pick best supported mime type
+    const videoMime = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(m => MediaRecorder.isTypeSupported(m));
+    const audioMime = ['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/webm','audio/mp4'].find(m => MediaRecorder.isTypeSupported(m));
+    const mime = S.mode === 'video' ? (videoMime||'') : (audioMime||'');
+
+    S.chunks = [];
+    S.mediaRecorder = new MediaRecorder(S.stream, mime ? { mimeType: mime } : {});
+    S.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) S.chunks.push(e.data); };
+    S.mediaRecorder.onstop = finaliseBlobs;
+    S.mediaRecorder.start(100);
+
+    S.isRecording = true;
+    S.recSecs = 0;
+    S.isDemoMode = false;
+
+    // UI updates
+    const btn = document.getElementById('rec-btn');
+    btn.className = 'rec-btn rec-btn-recording';
+    btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`;
+    document.getElementById('rec-status').textContent = 'Recording… tap to stop';
+    document.getElementById('rec-after').classList.remove('show');
+    document.getElementById('rec-live-dot').classList.add('show');
+
+    // Proper 1-second interval — only counts time, no bar animation (that's rAF)
+    S.recInterval = setInterval(() => {
+      S.recSecs++;
+      if (S.recSecs >= 30) stopRecording(false);
+    }, 1000);
+
+    animWaveform();
+  } catch(e) {
+    // Permissions denied or device unavailable — enter demo mode silently
+    demoRecord();
+  }
+}
+
+function finaliseBlobs() {
+  const mime = S.mediaRecorder ? S.mediaRecorder.mimeType : 'audio/webm';
+  const blob = new Blob(S.chunks, { type: mime });
+  if (S.mode === 'video') {
+    S.videoBlob = blob;
+    S.videoURL = URL.createObjectURL(blob);
+    S.audioBlob = blob; // same blob, can play/download as audio too
+    S.audioURL = S.videoURL;
+  } else {
+    S.audioBlob = blob;
+    S.audioURL = URL.createObjectURL(blob);
+    S.videoBlob = null;
+    S.videoURL = null;
+  }
+}
+
+function animWaveform() {
+  if (!S.analyser) return;
+  const data = new Uint8Array(S.analyser.frequencyBinCount);
+  const frame = () => {
+    if (!S.isRecording) return;
+    S.analyser.getByteFrequencyData(data);
+    S.wbars.forEach((b, i) => {
+      const v = data[Math.floor(i * data.length / S.wbars.length)] || 0;
+      b.style.height = Math.max(4, (v/255)*48) + 'px';
+      b.className = 'waveform-bar active';
+    });
+    S.animFrame = requestAnimationFrame(frame);
+  };
+  frame();
+}
+
+function demoRecord() {
+  // Demo mode when mic/camera permissions are denied — silent, no console warnings
+  S.isRecording = true; S.recSecs = 0; S.isDemoMode = true;
+  const btn = document.getElementById('rec-btn');
+  btn.className = 'rec-btn rec-btn-recording';
+  btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`;
+  document.getElementById('rec-status').textContent = 'Demo mode (no mic) — tap to stop';
+  document.getElementById('rec-live-dot').classList.add('show');
+
+  // Bar animation on its own fast interval — does NOT touch recSecs
+  S.barInterval = setInterval(() => {
+    S.wbars.forEach(b => {
+      b.style.height = Math.max(4, Math.random() * 48) + 'px';
+      b.className = 'waveform-bar active';
+    });
+  }, 80);
+
+  // Seconds counter on its own proper 1000ms interval
+  S.recInterval = setInterval(() => {
+    S.recSecs++;
+    if (S.recSecs >= 30) stopRecording(false);
+  }, 1000);
+}
+
+function stopRecording(silent) {
+  if (!S.isRecording) return;
+  S.isRecording = false;
+  clearInterval(S.recInterval);
+  clearInterval(S.barInterval);
+  if (S.animFrame) cancelAnimationFrame(S.animFrame);
+  if (S.mediaRecorder && S.mediaRecorder.state !== 'inactive') S.mediaRecorder.stop();
+  document.getElementById('rec-live-dot').classList.remove('show');
+  S.wbars.forEach(b => { b.className = 'waveform-bar'; b.style.height = '4px'; });
+  if (!silent) {
+    const btn = document.getElementById('rec-btn');
+    btn.className = 'rec-btn rec-btn-idle';
+    btn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="8"/></svg>`;
+    const demoNote = S.isDemoMode ? ' (demo — no mic)' : '';
+    document.getElementById('rec-status').textContent = `Recorded ${S.recSecs}s${demoNote} — ready to analyse`;
+    document.getElementById('rec-after').classList.add('show');
+  }
+}
+
+function resetRecording() {
+  stopRecording(true);
+  S.chunks = []; S.audioBlob = null; S.videoBlob = null; S.audioURL = null; S.videoURL = null;
+  S.recSecs = 0; S.isDemoMode = false;
+  const btn = document.getElementById('rec-btn');
+  btn.className = 'rec-btn rec-btn-idle';
+  btn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="8"/></svg>`;
+  document.getElementById('rec-status').textContent = 'Tap to start · 3-second countdown';
+  document.getElementById('rec-after').classList.remove('show');
+  document.getElementById('rec-live-dot').classList.remove('show');
+  S.wbars.forEach(b => { b.className = 'waveform-bar'; b.style.height = '4px'; });
+}
+
+// ══ ANALYSIS ══
+function analyseRecording() {
+  showScreen('analysing');
+  const steps = ['Transcribing audio…','Comparing to target…','Calculating score…','Building results…'];
+  let i = 0;
+  const iv = setInterval(() => { if (i < steps.length) document.getElementById('analysis-status').textContent = steps[i++]; }, 550);
+  setTimeout(() => {
+    clearInterval(iv);
+    const result = simulateScore(S.twister);
+    S.result = result;
+    S.attempts++;
+    localStorage.setItem('tw_attempts', S.attempts);
+    if (result.score > S.bestScore) { S.bestScore = result.score; localStorage.setItem('tw_best', S.bestScore); }
+    S.history.unshift({ twisterId: S.twister.id, score: result.score, ts: Date.now() });
+    localStorage.setItem('tw_history', JSON.stringify(S.history.slice(0,50)));
+    showResults(result);
+  }, 2600);
+}
+
+function simulateScore(twister) {
+  // Normalise target into clean word array
+  const normalize = s => s.replace(/[.,!?¡¿']/g,'').toLowerCase().trim();
+  const targetWords = normalize(twister.text).split(/\s+/);
+  const N = targetWords.length;
+
+  // --- Simulate what the STT "heard" ---
+  // In demo mode (no real mic): generate a plausible but imperfect attempt.
+  // The key fix: we DON'T just randomly corrupt words at a low rate.
+  // We simulate one of three realistic patterns:
+  //   (a) A genuinely good attempt with a few stumbles
+  //   (b) A mid attempt with several substitutions and restarts
+  //   (c) A poor attempt with lots of missed/wrong words (mimics gibberish)
+  // The pattern is chosen randomly so score varies meaningfully across tries.
+
+  const roll = Math.random();
+  let spokenWords;
+
+  if (roll < 0.25) {
+    // Poor attempt / gibberish — lots of random non-matching words
+    const fillers = ['um','uh','err','the','a','and','but','so','like','yeah','hmm'];
+    spokenWords = targetWords.map(() =>
+      Math.random() < 0.65
+        ? fillers[Math.floor(Math.random() * fillers.length)]  // totally wrong
+        : targetWords[Math.floor(Math.random() * N)]           // random target word (wrong position)
+    );
+  } else if (roll < 0.6) {
+    // Mediocre — gets ~half right, stumbles on hard sounds
+    spokenWords = targetWords.map(w => {
+      if (Math.random() < 0.45) return w; // correct
+      // Plausible phonetic near-miss
+      const misses = [
+        w.replace(/^s/,'sh').replace(/sh/,'s'),
+        w.replace(/p/,'b').replace(/b/,'p'),
+        w.replace(/([aeiou])\1/,'$1'),
+        w + 's',
+        w.slice(0,-1) || w,
+        w.split('').reverse().join('').slice(0,w.length), // scramble
+      ];
+      return misses[Math.floor(Math.random() * misses.length)];
+    });
+  } else {
+    // Good attempt — mostly right with a few errors
+    const errRate = twister.difficulty==='easy' ? 0.06 : twister.difficulty==='medium' ? 0.15 : 0.25;
+    spokenWords = targetWords.map(w => {
+      if (Math.random() > errRate) return w;
+      const misses = [w.replace(/s$/,''), w+'s', w.replace(/([aeiou])/,''), w.slice(0,-1)||w];
+      return misses[Math.floor(Math.random() * misses.length)];
+    });
+  }
+
+  // --- Word-level Levenshtein alignment ---
+  // Instead of position-by-position matching, use a proper DP alignment
+  // so insertions and deletions are handled correctly (not just substitutions).
+  const tokens = alignWords(targetWords, spokenWords);
+  const correct = tokens.filter(t => t.status === 'correct').length;
+
+  // --- Composite score ---
+  // Word accuracy (what fraction of target words were spoken correctly)
+  const wordAcc = correct / N;
+
+  // Character-level similarity bonus — rewards near-misses phonetically
+  let charSim = 0;
+  tokens.forEach(t => {
+    if (t.status === 'correct') { charSim += 1; return; }
+    if (t.spoken && t.expected) {
+      const sim = strSimilarity(t.expected, t.spoken);
+      charSim += sim * 0.4; // partial credit for near-misses
+    }
+  });
+  charSim = charSim / N;
+
+  // Length penalty: if they spoke far fewer or far more words, penalise
+  const lenRatio = Math.min(spokenWords.length, N) / Math.max(spokenWords.length, N);
+
+  const rawScore = (wordAcc * 0.65) + (charSim * 0.25) + (lenRatio * 0.10);
+  const score = Math.round(Math.min(100, Math.max(0, rawScore * 100)));
+
+  return {
+    score,
+    transcript: spokenWords.join(' '),
+    tokens,
+    correctCount: correct,
+    totalWords: N,
+    duration: S.recSecs || Math.floor(Math.random()*8)+4,
+    wpm: S.recSecs > 1 ? Math.round((N / (S.recSecs / 60))) : Math.round(N * 10),
+  };
+}
+
+// DP sequence alignment — like diff-match-patch but for word arrays
+function alignWords(target, spoken) {
+  const T = target.length, S2 = spoken.length;
+  // Build DP cost table
+  const dp = Array.from({length: T+1}, (_, i) => Array.from({length: S2+1}, (__, j) => {
+    if (i === 0) return j;
+    if (j === 0) return i;
+    return 0;
+  }));
+  for (let i = 1; i <= T; i++) {
+    for (let j = 1; j <= S2; j++) {
+      if (target[i-1] === spoken[j-1]) {
+        dp[i][j] = dp[i-1][j-1];
+      } else {
+        dp[i][j] = 1 + Math.min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1]);
+      }
+    }
+  }
+  // Traceback
+  const tokens = [];
+  let i = T, j = S2;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && target[i-1] === spoken[j-1]) {
+      tokens.unshift({ expected: target[i-1], spoken: spoken[j-1], status: 'correct' });
+      i--; j--;
+    } else if (j > 0 && (i === 0 || dp[i][j-1] <= dp[i-1][j] && dp[i][j-1] <= dp[i-1][j-1])) {
+      // Insertion in spoken (extra word)
+      tokens.unshift({ expected: null, spoken: spoken[j-1], status: 'extra' });
+      j--;
+    } else if (i > 0 && j > 0 && dp[i-1][j-1] <= dp[i-1][j]) {
+      // Substitution
+      tokens.unshift({ expected: target[i-1], spoken: spoken[j-1], status: 'wrong' });
+      i--; j--;
+    } else {
+      // Deletion (missing word)
+      tokens.unshift({ expected: target[i-1], spoken: null, status: 'missing' });
+      i--;
+    }
+  }
+  return tokens;
+}
+
+// Character-level similarity — normalised edit distance
+function strSimilarity(a, b) {
+  if (a === b) return 1;
+  const la = a.length, lb = b.length;
+  if (!la || !lb) return 0;
+  const dp = Array.from({length: la+1}, (_, i) => Array.from({length: lb+1}, (__, j) => j===0?i:0));
+  for (let j = 1; j <= lb; j++) dp[0][j] = j;
+  for (let i = 1; i <= la; i++) for (let j = 1; j <= lb; j++) {
+    dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1]);
+  }
+  return 1 - dp[la][lb] / Math.max(la, lb);
+}
+
+// ══ RESULTS ══
+function showResults(r) {
+  const t = S.twister;
+  S.shareId = Math.random().toString(36).slice(2,8);
+
+  document.getElementById('res-twister-name').textContent = t.title;
+  document.getElementById('res-score').textContent = r.score+'%';
+  document.getElementById('res-grade').textContent = grade(r.score);
+  document.getElementById('res-words-correct').textContent = `${r.correctCount}/${r.totalWords}`;
+  document.getElementById('res-wpm').textContent = r.wpm;
+  document.getElementById('res-transcript').textContent = `"${r.transcript}"`;
+  document.getElementById('sp-twister-text').textContent = t.text.length>60?t.text.substring(0,60)+'…':t.text;
+  document.getElementById('sp-score-text').textContent = r.score+'%';
+  document.getElementById('share-link-text').textContent = `twistup.app/r/${S.shareId}`;
+
+  // Personal best
+  const hist = S.history.filter(h=>h.twisterId===t.id).map(h=>h.score);
+  const isPB = hist.length<=1 || r.score>=Math.max(...hist);
+  document.getElementById('res-pb').textContent = isPB ? '🏅 New!' : Math.max(...hist)+'%';
+
+  // Badges
+  const badges = [];
+  if (r.score===100) badges.push('🏆 Perfect');
+  if (r.score>=90) badges.push('⭐ Expert');
+  if (r.wpm>120) badges.push('⚡ Speed');
+  if (r.score>=80) badges.push('🎤 Sharp');
+  document.getElementById('res-badges').innerHTML = badges.map(b=>`<div class="tag tag-purple">${b}</div>`).join('');
+
+  // Diff
+  document.getElementById('diff-line').innerHTML = r.tokens.map(tk => {
+    if (tk.status==='correct') return `<span class="word-correct">${tk.expected}</span>`;
+    if (tk.status==='missing') return `<span class="word-missing">[${tk.expected}]</span>`;
+    if (tk.status==='extra') return `<span style="color:var(--text3);font-size:13px;text-decoration:line-through">${tk.spoken}</span>`;
+    // wrong — show what they said, with expected underneath
+    return `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:0;line-height:1.3">
+      <span class="word-wrong">${tk.spoken}</span>
+      <span style="font-size:10px;color:var(--text3)">${tk.expected}</span>
+    </span>`;
+  }).join(' ');
+
+  // Media setup
+  const resultVideo = document.getElementById('result-video');
+  const dlAudio = document.getElementById('dl-audio-btn');
+  const dlVideo = document.getElementById('dl-video-btn');
+  const playBtn = document.getElementById('play-btn');
+
+  if (S.videoURL && S.mode === 'video') {
+    // Video recording
+    resultVideo.src = S.videoURL;
+    resultVideo.classList.remove('hidden');
+    // Hide separate audio controls when video has its own controls
+    document.querySelector('.media-controls').style.display = 'none';
+    dlVideo.style.display = 'flex';
+    dlAudio.style.display = 'flex';
+  } else if (S.audioURL) {
+    // Audio only
+    resultVideo.classList.add('hidden');
+    document.querySelector('.media-controls').style.display = 'block';
+    S.audioEl = new Audio(S.audioURL);
+    S.audioEl.ontimeupdate = updateProgress;
+    S.audioEl.onended = () => { document.getElementById('play-icon').innerHTML = '<polygon points="5 3 19 12 5 21"/>'; };
+    document.getElementById('media-title').textContent = `${t.flag} ${t.title} — audio`;
+    document.getElementById('media-time').textContent = `0:00 / ${fmt(r.duration)}`;
+    dlAudio.style.display = 'flex';
+    dlVideo.style.display = 'none';
+  } else {
+    // Demo mode — no blobs
+    resultVideo.classList.add('hidden');
+    document.querySelector('.media-controls').style.display = 'block';
+    document.getElementById('media-title').textContent = 'Demo mode — no recording';
+    dlAudio.style.display = 'none';
+    dlVideo.style.display = 'none';
+  }
+
+  if (r.score >= 80) spawnConfetti();
+  showScreen('results');
+}
+
+function grade(s) {
+  if (s>=95) return '🏆 Perfect!';
+  if (s>=85) return '🌟 Excellent!';
+  if (s>=70) return '👏 Great job!';
+  if (s>=55) return '💪 Good effort!';
+  return '🎯 Keep practising!';
+}
+
+// ══ PLAYBACK (audio-only mode) ══
+function togglePlayback() {
+  if (!S.audioEl) { showToast('🎤 No recording in demo mode'); return; }
+  if (S.audioEl.paused) {
+    S.audioEl.play();
+    document.getElementById('play-icon').innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  } else {
+    S.audioEl.pause();
+    document.getElementById('play-icon').innerHTML = '<polygon points="5 3 19 12 5 21"/>';
+  }
+}
+
+function updateProgress() {
+  if (!S.audioEl) return;
+  const pct = (S.audioEl.currentTime / S.audioEl.duration) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('media-time').textContent = `${fmt(S.audioEl.currentTime)} / ${fmt(S.audioEl.duration||0)}`;
+}
+
+function seekAudio(e) {
+  if (!S.audioEl) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  S.audioEl.currentTime = ((e.clientX - rect.left) / rect.width) * S.audioEl.duration;
+}
+
+function fmt(s) { s=Math.floor(s||0); return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`; }
+
+// ══ DOWNLOAD ══
+function downloadAudio() {
+  if (!S.audioURL) { showToast('🎤 No recording in demo mode'); return; }
+  const slug = S.twister.title.toLowerCase().replace(/\s+/g,'-');
+  const ext = S.audioBlob?.type?.includes('mp4') ? 'mp4' : 'webm';
+  triggerDL(S.audioURL, `twistup-${slug}-audio.${ext}`);
+  showToast('⬇️ Downloading audio…');
+}
+
+function downloadVideo() {
+  if (!S.videoURL) { showToast('🎤 No video in demo mode'); return; }
+  const slug = S.twister.title.toLowerCase().replace(/\s+/g,'-');
+  const ext = S.videoBlob?.type?.includes('mp4') ? 'mp4' : 'webm';
+  triggerDL(S.videoURL, `twistup-${slug}-video.${ext}`);
+  showToast('⬇️ Downloading video…');
+}
+
+function triggerDL(url, name) {
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+}
+
+// ══ SHARE ══
+function shareText() {
+  return `I scored ${S.result.score}% on "${S.twister.title}" on TwistUp! 🎤 ${grade(S.result.score)}\nCan you beat me? 👇 twistup.app/r/${S.shareId}`;
+}
+
+function shareToTwitter() {
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText())}`, '_blank');
+  showToast('🐦 Opening X / Twitter…');
+}
+
+async function shareNative() {
+  const text = shareText();
+  // Try Web Share API with file if we have a video blob (works on mobile)
+  if (navigator.share) {
+    try {
+      const shareData = { title: 'TwistUp Score', text };
+      if (S.videoBlob && navigator.canShare && navigator.canShare({ files: [new File([S.videoBlob], 'twistup.webm', { type: S.videoBlob.type })] })) {
+        shareData.files = [new File([S.videoBlob], 'twistup.webm', { type: S.videoBlob.type })];
+      } else if (S.audioBlob && navigator.canShare && navigator.canShare({ files: [new File([S.audioBlob], 'twistup-audio.webm', { type: S.audioBlob.type })] })) {
+        shareData.files = [new File([S.audioBlob], 'twistup-audio.webm', { type: S.audioBlob.type })];
+      }
+      await navigator.share(shareData);
+      return;
+    } catch(e) { /* fall through */ }
+  }
+  // Fallback: copy text
+  copyToClipboard(text);
+  showToast('📋 Copied! Screenshot the card above for Stories.');
+}
+
+async function shareToTikTok() {
+  // Download the clip — user posts it to TikTok manually
+  if (S.videoURL) {
+    downloadVideo();
+    showToast('📹 Video saved — post it to TikTok!');
+  } else if (S.audioURL) {
+    downloadAudio();
+    showToast('🎵 Audio saved — post it to TikTok!');
+  } else {
+    copyToClipboard(shareText());
+    showToast('📋 Text copied — post it to TikTok!');
+  }
+}
+
+function copyShareLink() {
+  const link = `https://twistup.app/r/${S.shareId}`;
+  copyToClipboard(link);
+  showToast('🔗 Link copied to clipboard!');
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const el = document.createElement('textarea');
+  el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+  document.body.appendChild(el); el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+}
+
+function retryCurrentTwister() {
+  if (S.twister) { resetRecording(); showScreen('record'); }
+}
+
+// ══ CONFETTI ══
+function spawnConfetti() {
+  const colors = ['#9b7fe0','#2dd4a0','#f5a623','#f4715a','#4ade80'];
+  const c = document.getElementById('confetti');
+  c.innerHTML = '';
+  for (let i = 0; i < 45; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `left:${Math.random()*100}%;width:${5+Math.random()*7}px;height:${5+Math.random()*7}px;background:${colors[i%colors.length]};animation-duration:${1.6+Math.random()*2}s;animation-delay:${Math.random()*0.6}s;`;
+    c.appendChild(p);
+  }
+}
+
+// ══ LEADERBOARD ══
+function renderLeaderboard() {
+  const sel = document.getElementById('lb-twister-select');
+  if (!sel.options.length) TWISTERS.forEach(t => { const o = document.createElement('option'); o.value=t.id; o.textContent=`${t.flag} ${t.title}`; sel.appendChild(o); });
+  const data = LEADERBOARD_DATA[+sel.value||1] || LEADERBOARD_DATA[1];
+  const rankE = ['🥇','🥈','🥉'], rankC = ['gold','silver','bronze'];
+  document.getElementById('lb-list').innerHTML = data.map((e,i) => `
+    <div class="lb-row ${e.isYou?'you-row':''}">
+      <div class="lb-rank ${rankC[i]||''}">${rankE[i]||(i+1)}</div>
+      <div class="lb-avatar" style="background:${e.color}22;color:${e.color}">${e.name.slice(0,2).toUpperCase()}</div>
+      <div class="lb-name">${e.name}${e.isYou?' <span style="font-size:11px;color:var(--purple-l)">(you)</span>':''}</div>
+      <div><div class="lb-score">${e.score}%</div><div class="lb-attempts">${e.attempts} tries</div></div>
+    </div>`).join('');
+}
+
+// ══ PROFILE ══
+function renderProfileBadges() {
+  const badges = [
+    { emoji:'🎤', label:'First Try', earned: S.attempts>0 },
+    { emoji:'🔥', label:'3-day streak', earned: S.streak>=3 },
+    { emoji:'⭐', label:'High scorer', earned: S.bestScore>=80 },
+    { emoji:'🌍', label:'Polyglot', earned: false },
+    { emoji:'⚡', label:'Speed demon', earned: false },
+    { emoji:'🏆', label:'Perfect score', earned: false },
+  ];
+  document.getElementById('profile-badges').innerHTML = badges.map(b =>
+    `<div style="opacity:${b.earned?1:0.3};display:flex;flex-direction:column;align-items:center;gap:3px;width:52px">
+      <div style="font-size:24px">${b.emoji}</div>
+      <div style="font-size:10px;color:var(--text2);text-align:center">${b.label}</div>
+    </div>`).join('');
+}
+
+function renderProfileHistory() {
+  const el = document.getElementById('profile-history');
+  if (!S.history.length) { el.textContent = 'No attempts yet.'; return; }
+  el.innerHTML = S.history.slice(0,5).map(h => {
+    const t = TWISTERS.find(tw=>tw.id===h.twisterId);
+    const ago = Math.floor((Date.now()-h.ts)/1000);
+    const agoStr = ago<60?'just now':ago<3600?Math.floor(ago/60)+'m ago':Math.floor(ago/3600)+'h ago';
+    return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div>${t?.flag||'🎤'} ${t?.title||'Unknown'}</div>
+      <div style="display:flex;gap:10px"><span style="color:var(--purple-l);font-weight:600">${h.score}%</span><span style="color:var(--text3)">${agoStr}</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('profile-total').textContent = S.attempts;
+  document.getElementById('profile-best').textContent = S.bestScore+'%';
+}
+
+// ══ TOAST ══
+let toastT;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>
